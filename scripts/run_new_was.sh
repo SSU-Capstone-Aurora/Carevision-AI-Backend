@@ -32,7 +32,7 @@ fi
 source "${VENV_DIR}/bin/activate"
 
 # 종속성 설치
-pip install -r home/ec2-user/carevision-ai/requirements.txt
+pip install -r /home/ec2-user/carevision-ai/requirements.txt
 
 # Gunicorn으로 애플리케이션 실행
 nohup gunicorn -b 0.0.0.0:${TARGET_PORT} app:app > /home/ec2-user/nohup-ai.out 2>&1 &
