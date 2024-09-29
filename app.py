@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 
 app = Flask(__name__)
 
-@app.route('/health', methods=['GET'])
+@app.route('/ai-health', methods=['GET'])
 def health_check():
     return jsonify(status='healthy', message='Im healthy!!'), 200
 
