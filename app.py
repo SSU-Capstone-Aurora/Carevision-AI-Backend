@@ -1,12 +1,10 @@
-from flask import Flask, render_template
+from flask import Flask
 
 app = Flask(__name__)
 
 @app.route('/ai-health', methods=['GET'])
 def health_check():
-    status = "healthy"
-    message = "I'm healthy!!"
-    return render_template('health_check.html', status=status, message=message)
+    return "I'm healthy!!!"
 
 if __name__ == '__main__':
     app.run()
