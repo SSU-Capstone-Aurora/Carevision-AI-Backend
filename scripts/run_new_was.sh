@@ -31,11 +31,13 @@ fi
 # 가상환경 활성화
 source "${VENV_DIR}/bin/activate"
 
+# PYTHONPATH 설정
+export PYTHONPATH=/home/ec2-user/carevision-ai
+
 # 종속성 설치
-pip install -r home/ec2-user/carevision-ai/requirements.txt
+pip install -r /home/ec2-user/carevision-ai/requirements.txt
 
 # Gunicorn으로 애플리케이션 실행
 nohup gunicorn -b 0.0.0.0:${TARGET_PORT} app:app > /home/ec2-user/nohup-ai.out 2>&1 &
-
 echo "> Now new WAS runs at ${TARGET_PORT}."
 exit 0
