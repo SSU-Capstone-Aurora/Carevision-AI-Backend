@@ -14,11 +14,20 @@ else
 fi
 
 TARGET_PID=$(lsof -Fp -i TCP:${TARGET_PORT} | grep -Po 'p[0-9]+' | grep -Po '[0-9]+')
+echo "> TARGET_PID is ${TARGET_PID}."
 
-if [ ! -z ${TARGET_PID} ]; then
+if [ -n "${TARGET_PID}" ]; then
   echo "> Kill WAS running at ${TARGET_PORT}."
   sudo kill ${TARGET_PID}
+else
+  echo "> No running WAS found at ${TARGET_PORT}."
 fi
+
+# 포트 종료까지 기다리기
+while lsof -i :${TARGET_PORT}; do
+    echo "> Port ${TARGET_PORT} is already in use. Waiting..."
+    sleep 2
+done
 
 # 가상환경 경로
 VENV_DIR="/home/ec2-user/carevision-ai/venv"
