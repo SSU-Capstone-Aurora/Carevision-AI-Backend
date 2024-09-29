@@ -64,4 +64,4 @@ jobs:
           utcOffset: "+09:00"
 
       - name: Code Deploy
-        run: aws deploy create-deployment --application-name carevision-deploy --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name develop --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
+        run: aws deploy create-deployment --application-name carevision-deploy --deployment-config-name CodeDeployDefault.AllAtOnce --deployment-group-name ai-develop --s3-location bucket=$S3_BUCKET_NAME,bundleType=zip,key=$PROJECT_NAME/$GITHUB_SHA.zip
