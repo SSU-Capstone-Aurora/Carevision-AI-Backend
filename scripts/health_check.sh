@@ -6,12 +6,15 @@ TARGET_PORT=0
 
 # Toggle port Number
 if [ ${CURRENT_PORT} -eq 5001 ]; then
-    TARGET_PORT=5002
+  TARGET_PORT=5002
+  TARGET_CONTAINER="carevision-ai-green"
+  CURRENT_CONTAINER="carevision-ai-blue"
 elif [ ${CURRENT_PORT} -eq 5002 ]; then
-    TARGET_PORT=5001
+  TARGET_PORT=5001
+  TARGET_CONTAINER="carevision-ai-blue"
+  CURRENT_CONTAINER="carevision-ai-green"
 else
-    echo "> No WAS is connected to nginx"
-    exit 1
+  echo "> No WAS is connected to nginx"
 fi
 
 
