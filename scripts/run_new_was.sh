@@ -19,8 +19,8 @@ fi
 
 # 도커 이미지 빌드
 echo "> Building Docker images..."
-docker-compose -f ../../docker-compose.yml build
+docker-compose -f /home/ec2-user/docker-compose.yml build
 
 # 새 컨테이너 실행
 echo "> Starting new container: ${TARGET_CONTAINER} on port ${TARGET_PORT}"
-docker-compose -f ../../docker-compose.yml up -d ${TARGET_CONTAINER}
+docker-compose -f /home/ec2-user/docker-compose.yml up -d ${TARGET_CONTAINER}
