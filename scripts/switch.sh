@@ -8,12 +8,16 @@ echo "> Nginx currently proxies to ${CURRENT_PORT}."
 
 # Toggle port number
 if [ ${CURRENT_PORT} -eq 5001 ]; then
-    TARGET_PORT=5002
+  TARGET_PORT=5002
+  TARGET_CONTAINER="carevision-ai-green"
+  CURRENT_CONTAINER="carevision-ai-blue"
 elif [ ${CURRENT_PORT} -eq 5002 ]; then
-    TARGET_PORT=5001
+  TARGET_PORT=5001
+  TARGET_CONTAINER="carevision-ai-blue"
+  CURRENT_CONTAINER="carevision-ai-green"
 else
-    echo "> No WAS is connected to nginx"
-    exit 1
+  echo "> No WAS is connected to nginx"
+  exit 1
 fi
 
 # Change proxying port into target port
@@ -25,3 +29,9 @@ echo "> Now Nginx proxies to ${TARGET_PORT}."
 sudo service nginx reload
 
 echo "> Nginx reloaded."
+
+# 이전 컨테이너 종료
+echo "> Stopping current container: ${CURRENT_CONTAINER}"
+docker-compose -f ../../docker-compose.yml stop ${CURRENT_CONTAINER}
+
+echo "> Deployment to ${TARGET_PORT} complete"
