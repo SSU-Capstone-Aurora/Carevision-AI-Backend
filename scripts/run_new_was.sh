@@ -7,46 +7,33 @@ echo "> Current port of running WAS is ${CURRENT_PORT}."
 
 if [ ${CURRENT_PORT} -eq 5001 ]; then
   TARGET_PORT=5002
+  TARGET_CONTAINER="carevision-ai-green"
+  CURRENT_CONTAINER="carevision-ai-blue"
 elif [ ${CURRENT_PORT} -eq 5002 ]; then
   TARGET_PORT=5001
+  TARGET_CONTAINER="carevision-ai-blue"
+  CURRENT_CONTAINER="carevision-ai-green"
 else
   echo "> No WAS is connected to nginx"
 fi
 
-TARGET_PID=$(lsof -Fp -i TCP:${TARGET_PORT} | grep -Po 'p[0-9]+' | grep -Po '[0-9]+')
-echo "> TARGET_PID is ${TARGET_PID}."
+# 도커 이미지 빌드
+echo "> Building Docker images..."
+docker-compose -f ../docker-compose.yml build
 
-if [ -n "${TARGET_PID}" ]; then
-  echo "> Kill WAS running at ${TARGET_PORT}."
-  sudo kill ${TARGET_PID}
-else
-  echo "> No running WAS found at ${TARGET_PORT}."
-fi
+# 새 컨테이너 실행
+echo "> Starting new container: ${TARGET_CONTAINER} on port ${TARGET_PORT}"
+docker-compose -f ../docker-compose.yml up -d ${TARGET_CONTAINER}
 
-# 포트 종료까지 기다리기
-while lsof -i :${TARGET_PORT}; do
-    echo "> Port ${TARGET_PORT} is already in use. Waiting..."
-    sleep 2
-done
+# nginx를 통한 포트 전환
+echo "> Switching nginx to point to ${TARGET_PORT}"
+echo "set \$service_url http://127.0.0.1:${TARGET_PORT};" | sudo tee /etc/nginx/conf.d/service_ai_url.inc
 
-# 가상환경 경로
-VENV_DIR="/home/ec2-user/carevision-ai/venv"
+echo "> Reloading nginx"
+sudo service nginx reload
 
-# 가상환경이 없으면 생성
-if [ ! -d "${VENV_DIR}" ]; then
-  python3 -m venv "${VENV_DIR}"
-fi
+# 이전 컨테이너 종료
+echo "> Stopping current container: ${CURRENT_CONTAINER}"
+docker-compose -f ../docker-compose.yml stop ${CURRENT_CONTAINER}
 
-# 가상환경 활성화
-source "${VENV_DIR}/bin/activate"
-
-# PYTHONPATH 설정
-export PYTHONPATH=/home/ec2-user/carevision-ai
-
-# 종속성 설치
-pip install -r /home/ec2-user/carevision-ai/requirements.txt
-
-# Gunicorn으로 애플리케이션 실행
-nohup gunicorn -b 0.0.0.0:${TARGET_PORT} app:app > /home/ec2-user/nohup-ai.out 2>&1 &
-echo "> Now new WAS runs at ${TARGET_PORT}."
-exit 0
+echo "> Deployment to ${TARGET_PORT} complete"
