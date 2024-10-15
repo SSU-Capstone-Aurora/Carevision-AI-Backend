@@ -1,10 +1,8 @@
 import cv2
-import os
 from kafka import KafkaProducer
-import json
-import numpy as np
 
-def stream_rtsp_and_send_to_kafka(url, output_path, kafka_server, kafka_topic, codec='mp4v', fps=30, frame_size=(640, 480)):
+
+def stream_rtsp_and_send_to_kafka(url, kafka_server, kafka_topic, fps=30, frame_size=(640, 480)):
 
     # Kafka Producer 생성
     producer = KafkaProducer(bootstrap_servers=[kafka_server],
@@ -17,15 +15,6 @@ def stream_rtsp_and_send_to_kafka(url, output_path, kafka_server, kafka_topic, c
         print("카메라 스트림을 열 수 없습니다.")
         return
 
-    # 저장할 비디오 파일 경로 설정
-    fourcc = cv2.VideoWriter_fourcc(*codec)  # 코덱 설정 (MP4용 mp4v)
-    out = cv2.VideoWriter(output_path, fourcc, fps, frame_size)
-
-    if not out.isOpened():
-        print("비디오 파일을 저장할 수 없습니다.")
-        cap.release()
-        return
-
     while True:
         ret, frame = cap.read()
 
@@ -36,9 +25,6 @@ def stream_rtsp_and_send_to_kafka(url, output_path, kafka_server, kafka_topic, c
         # 화면에 프레임 출력
         cv2.imshow("RTSP 스트림", frame)
 
-        # 프레임을 파일에 저장
-        out.write(frame)
-
         # 프레임을 Kafka 서버로 전송 (바이트 형태로 전송)
         producer.send(kafka_topic, value=frame)
 
@@ -48,21 +34,17 @@ def stream_rtsp_and_send_to_kafka(url, output_path, kafka_server, kafka_topic, c
 
     # 모든 작업 종료 후 자원 해제
     cap.release()
-    out.release()
     cv2.destroyAllWindows()
     producer.close()
 
-# RTSP URL
-url = "rtsp://admin:L2CFB0FD@192.168.35.64/cam/realmonitor?channel=1&subtype=0"
-
-# 저장할 파일 경로, 삭제해도 상관 없음
-output_folder = r"C:\VideoStream"
-output_file = os.path.join(output_folder, 'stream_output.mp4')
-
-frame_size = (1920, 1080)
+# RTSP URL 입력
+camera_id = "admin"
+camera_pw = input("Enter camera pw: ")  # default: L2CFB0FD
+camera_ip = input("Enter camera ip: ")  # default: 192.168.35.64
+url = "rtsp://" + camera_id + ":" + camera_pw + "@" + camera_ip + "/cam/realmonitor?channel=1&subtype=0"
 
 # Kafka 서버 정보
-kafka_server = 'localhost:9092'  # 실제 Kafka 서버 주소
+kafka_server = input("Example = 127.0.0.1:9092, Enter kafka server ip and port : ")  # 실제 Kafka 서버 주소, test default : localhost:9092
 kafka_topic = 'video-stream'
 
-stream_rtsp_and_send_to_kafka(url, output_file, kafka_server, kafka_topic, codec='mp4v', fps=30, frame_size=frame_size)
+stream_rtsp_and_send_to_kafka(url, kafka_server, kafka_topic, fps=30, frame_size=(1920, 1080))
