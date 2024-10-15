@@ -1,10 +1,7 @@
-from flask import Flask
+from fastapi import FastAPI
 
-app = Flask(__name__)
+app = FastAPI()
 
-@app.route('/ai-health', methods=['GET'])
+@app.get('/ai-health')
 def health_check():
-    return "I'm healthy!!!"
-
-if __name__ == '__main__':
-    app.run()
+    return {"I'm healthy!!!"}
