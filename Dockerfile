@@ -6,6 +6,12 @@ COPY requirements.txt /app-ai/
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+# 영상 처리에 필요한 시스템 라이브러리 설치
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0
+
+# 어플리케이션 코드 복사
 COPY . /app-ai
 
 ENV PORT=5001
