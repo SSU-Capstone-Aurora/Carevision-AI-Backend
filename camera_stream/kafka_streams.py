@@ -1,7 +1,11 @@
+import os
+
 from faststream import FastStream
 from faststream.kafka import KafkaBroker
 
-broker = KafkaBroker("kafka-faststream:9092")
+# Kafka 브로커 설정
+broker_env = os.environ.get("BROKER")
+broker = KafkaBroker(broker_env)
 
 app = FastStream(broker)
 

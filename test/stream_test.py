@@ -1,8 +1,12 @@
+import os
+
 from faststream.kafka import KafkaBroker
 
 from camera_stream.kafka_streams import send_to_topic, startup_event
 
-broker = KafkaBroker("kafka-faststream:9092")  # Kafka 브로커 주소 설정
+# Kafka 브로커 설정
+broker_env = os.environ.get("BROKER")
+broker = KafkaBroker(broker_env)
 
 async def send_example():
     await startup_event()
