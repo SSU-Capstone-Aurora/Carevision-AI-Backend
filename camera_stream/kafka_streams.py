@@ -1,9 +1,16 @@
+import asyncio
+
 from config.kafka_broker_instance import broker
 
-async def startup_event():
-    print("Kafka 브로커 연결 시도 중...")
-    await broker.connect()
-    print("Kafka 브로커 연결 완료")
+async def connect_broker():
+    try:
+        print("Kafka 브로커 연결 시도 중...")
+        await broker.connect()
+        print("Kafka 브로커 연결 완료")
+    except Exception as e:
+        print(f"Kafka 브로커 연결 실패: {e}")
+        await asyncio.sleep(3) # 3초 대기 후 재시도
+        await connect_broker()
 
 # Kafka에서 구독
 def subscribe_to_topic(topic_name):
