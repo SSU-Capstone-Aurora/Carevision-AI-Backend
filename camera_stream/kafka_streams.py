@@ -1,13 +1,4 @@
-import os
-
-from faststream import FastStream
-from faststream.kafka import KafkaBroker
-
-# Kafka 브로커 설정
-broker_env = os.environ.get("BROKER")
-broker = KafkaBroker(broker_env)
-
-app = FastStream(broker)
+from config.kafka_broker_instance import broker
 
 async def startup_event():
     print("Kafka 브로커 연결 시도 중...")

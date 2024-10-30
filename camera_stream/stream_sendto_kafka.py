@@ -1,9 +1,9 @@
 import os
 import zlib
 import cv2
-from faststream import FastStream
-from faststream.kafka import KafkaBroker
 from dotenv import load_dotenv
+
+from config.kafka_broker_instance import broker
 
 # .env 파일 로딩
 load_dotenv()
@@ -14,14 +14,11 @@ url = f"rtsp://{camera_id}:{camera_pw}@{camera_ip}/cam/realmonitor?channel=1&sub
 
 # FastStream, Kafka 브로커 설정
 broker_env = os.environ.get("BROKER")
-broker = KafkaBroker(broker_env)
-app = FastStream(broker)
-
 
 # 병원을 토픽으로, 환자 key, data값으로 저장
 async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
     frame_counter = 0
-    frame_interval = 300  # 10초
+    frame_interval = 270  # 10초
 
     # RTSP 스트림 열기
     cap = cv2.VideoCapture(url)
