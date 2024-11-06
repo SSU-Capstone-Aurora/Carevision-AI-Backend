@@ -1,50 +1,65 @@
+import os
+import zlib
 import cv2
-from kafka import KafkaProducer
+import asyncio
+from dotenv import load_dotenv
+from config.kafka_broker_instance import broker
 
+load_dotenv()
+camera_id = os.environ.get("CAMERA_ID")
+camera_pw = os.environ.get("CAMERA_PASSWORD")
+camera_ip = os.environ.get("CAMERA_IP")
+url = f"rtsp://{camera_id}:{camera_pw}@{camera_ip}/cam/realmonitor?channel=1&subtype=0"
 
-def stream_rtsp_and_send_to_kafka(url, kafka_server, kafka_topic, fps=30, frame_size=(640, 480)):
-
-    # Kafka Producer 생성
-    producer = KafkaProducer(bootstrap_servers=[kafka_server],
-                             value_serializer=lambda x: x.tobytes())  # 데이터를 바이트로 전송
-
-    # RTSP 스트림 열기
-    cap = cv2.VideoCapture(url)
-
-    if not cap.isOpened():
-        print("카메라 스트림을 열 수 없습니다.")
-        return
+async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
+    frame_counter = 0
+    frame_interval = 270  # 10초마다 처리
+    retry_attempts = 5
 
     while True:
-        ret, frame = cap.read()
+        # RTSP 스트림 열기
+        cap = cv2.VideoCapture(url)
 
-        if not ret:
-            print("프레임을 가져올 수 없습니다.")
-            break
+        if not cap.isOpened():
+            print("카메라 스트림을 열 수 없습니다.")
+            await asyncio.sleep(3)
+            continue
 
-        # 화면에 프레임 출력
-        cv2.imshow("RTSP 스트림", frame)
+        while True:
+            try:
+                ret, frame = cap.read()
+                if not ret:
+                    print("프레임을 가져올 수 없습니다. 스트림 재시도 중...")
+                    cap.release()
+                    await asyncio.sleep(3)
+                    break
 
-        # 프레임을 Kafka 서버로 전송 (바이트 형태로 전송)
-        producer.send(kafka_topic, value=frame)
+                frame_counter += 1
+                if frame_counter % frame_interval == 0:
+                    ret, buffer = cv2.imencode('.jpg', frame)
+                    if not ret:
+                        print("프레임 인코딩 실패")
+                        continue
 
-        # 'q'를 누르면 종료
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
+                    compressed_frame = zlib.compress(buffer)
 
-    # 모든 작업 종료 후 자원 해제
-    cap.release()
+                    for attempt in range(retry_attempts):
+                        try:
+                            await broker.publish(compressed_frame, kafka_topic, key=user_id)
+                            print("Kafka에 메시지 전송 성공")
+                            break
+                        except Exception as e:
+                            print(f"Kafka 전송 실패: {e}, 재시도 중...")
+                            await asyncio.sleep(2 ** attempt)
+                    else:
+                        print("Kafka 전송 최종 실패")
+
+            except Exception as e:
+                print(f"오류 발생: {e}")
+                break
+
+        # 자원 해제 및 루프 재시작
+        cap.release()
+        await asyncio.sleep(3)
+
     cv2.destroyAllWindows()
-    producer.close()
-
-# RTSP URL 입력
-camera_id = "admin"
-camera_pw = input("Enter camera pw: ")  # default: L2CFB0FD
-camera_ip = input("Enter camera ip: ")  # default: 192.168.35.64
-url = "rtsp://" + camera_id + ":" + camera_pw + "@" + camera_ip + "/cam/realmonitor?channel=1&subtype=0"
-
-# Kafka 서버 정보
-kafka_server = input("Example = 127.0.0.1:9092, Enter kafka server ip and port : ")  # 실제 Kafka 서버 주소, test default : localhost:9092
-kafka_topic = 'video-stream'
-
-stream_rtsp_and_send_to_kafka(url, kafka_server, kafka_topic, fps=30, frame_size=(1920, 1080))
