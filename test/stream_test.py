@@ -1,4 +1,4 @@
-from config.kafka_broker_instance import broker
+from src.config.kafka_broker_instance import broker
 
 
 async def send_example():

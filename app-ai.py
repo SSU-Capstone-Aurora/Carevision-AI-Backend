@@ -2,9 +2,9 @@ import asyncio
 
 from fastapi import FastAPI
 
-from camera_stream.kafka_streams import connect_broker
-from camera_stream.stream_sendto_kafka import stream_rtsp_and_send_to_kafka
-from config.kafka_broker_instance import kafka_app
+from src.camera_stream.kafka_streams import connect_broker
+from src.camera_stream.stream_sendto_kafka import stream_rtsp_and_send_to_kafka
+from src.config.kafka_broker_instance import kafka_app
 from test.api_test import router
 
 app = FastAPI()
