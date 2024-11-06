@@ -3,7 +3,7 @@ import zlib
 import cv2
 from dotenv import load_dotenv
 
-from config.kafka_broker_instance import broker
+from src.config.kafka_broker_instance import broker
 
 # .env 파일 로딩
 load_dotenv()
