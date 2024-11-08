@@ -1,55 +1,39 @@
 import os
 import zlib
-import cv2
 from dotenv import load_dotenv
-
+from Crypto.Cipher import AES
 from src.config.kafka_broker_instance import broker
 
 # .env 파일 로딩
 load_dotenv()
-camera_id = os.environ.get("CAMERA_ID")
-camera_pw = os.environ.get("CAMERA_PASSWORD")
-camera_ip = os.environ.get("CAMERA_IP")
-url = f"rtsp://{camera_id}:{camera_pw}@{camera_ip}/cam/realmonitor?channel=1&subtype=0"
 
-# FastStream, Kafka 브로커 설정
-broker_env = os.environ.get("BROKER")
+# AES 암호화에 사용할 키와 IV 로딩
+aes_key = os.environ.get("AES_KEY").encode()  # 32바이트 AES 키
+aes_iv = os.environ.get("AES_IV").encode()    # 16바이트 IV (nonce)
 
-# 병원을 토픽으로, 환자 key, data값으로 저장
-async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
-    frame_counter = 0
-    frame_interval = 270  # 10초
+# AES GCM 복호화 함수
+def decrypt_data_gcm(encrypted_data, tag, nonce):
+    cipher = AES.new(aes_key, AES.MODE_GCM, nonce=nonce)
+    decrypted_data = cipher.decrypt_and_verify(encrypted_data, tag)
+    return decrypted_data
 
-    # RTSP 스트림 열기
-    cap = cv2.VideoCapture(url)
+# Kafka에서 암호화된 메시지를 수신하고 복호화
+async def consume_encrypted_data(kafka_topic):
+    async for message in broker.subscribe([kafka_topic]):
+        encrypted_message = message.value
 
-    if not cap.isOpened():
-        print("카메라 스트림을 열 수 없습니다.")
-        return
+        # 암호화된 데이터, nonce(IV), tag 분리
+        encrypted_frame = encrypted_message[:-32]  # 데이터
+        tag = encrypted_message[-32:-16]           # 인증 태그
+        nonce = encrypted_message[-16:]            # IV
 
-    while True:
-        ret, frame = cap.read()
+        # 복호화 처리
+        try:
+            decrypted_frame = decrypt_data_gcm(encrypted_frame, tag, nonce)
+            # 압축 해제
+            decompressed_frame = zlib.decompress(decrypted_frame)
 
-        if not ret:
-            print("프레임을 가져올 수 없습니다.")
-            break
-
-        # 프레임 카운터 증가
-        frame_counter += 1
-
-        # 설정 프레임마다 분석 작업 실행
-        if frame_counter % frame_interval == 0:
-            ret, buffer = cv2.imencode('.jpg', frame)
-            if not ret:
-                print("프레임 인코딩 실패")
-                continue
-
-            # JPEG 데이터를 zlib로 압축
-            compressed_frame = zlib.compress(buffer)
-
-            # 프레임을 Kafka 서버로 전송
-            await broker.publish(compressed_frame, kafka_topic, key=user_id)
-
-    # 모든 작업 종료 후 자원 해제
-    cap.release()
-    cv2.destroyAllWindows()
+            # 이후 필요한 작업을 수행 (예: 프레임 저장 또는 처리)
+            print("복호화된 프레임을 수신하였습니다.")
+        except (ValueError, KeyError) as e:
+            print(f"복호화 오류: {e}")
