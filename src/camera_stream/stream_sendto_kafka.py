@@ -13,9 +13,6 @@ camera_pw = os.environ.get("CAMERA_PASSWORD")
 camera_ip = os.environ.get("CAMERA_IP")
 url = f"rtsp://{camera_id}:{camera_pw}@{camera_ip}/cam/realmonitor?channel=1&subtype=0"
 
-# FastStream, Kafka 브로커 설정
-broker_env = os.environ.get("BROKER")
-
 # 병원을 토픽으로, 환자 key, data값으로 저장
 async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
     frame_counter = 0
