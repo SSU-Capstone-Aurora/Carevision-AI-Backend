@@ -54,7 +54,7 @@ async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
             # 프레임을 Kafka 서버로 전송
             for attempt in range(retry_attempts):
                 try:
-                    await broker.publish(compressed_frame, kafka_topic, key=user_id)
+                    await broker.publish(compressed_frame, kafka_topic, key=user_id.encode('utf-8'))
                     print("Kafka에 메시지 전송 성공")
                     break
                 except Exception as e:
