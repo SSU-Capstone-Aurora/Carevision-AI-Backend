@@ -13,10 +13,11 @@ camera_pw = os.environ.get("CAMERA_PASSWORD")
 camera_ip = os.environ.get("CAMERA_IP")
 url = f"rtsp://{camera_id}:{camera_pw}@{camera_ip}/cam/realmonitor?channel=1&subtype=0"
 
+
 # 병원을 토픽으로, 환자 key, data값으로 저장
 async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
     frame_counter = 0
-    frame_interval = 270  # 10초
+    frame_interval = 120  # 4초
     retry_attempts = 5
 
     # RTSP 스트림 열기
@@ -51,7 +52,7 @@ async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
             # 프레임을 Kafka 서버로 전송
             for attempt in range(retry_attempts):
                 try:
-                    await broker.publish(compressed_frame, kafka_topic, key=user_id.encode('utf-8'))
+                    await broker.publish(message=compressed_frame, topic=kafka_topic, key=user_id.encode('utf-8'))
                     print("Kafka에 메시지 전송 성공")
                     break
                 except Exception as e:
