@@ -17,8 +17,7 @@ def subscribe_to_topic(topic_name):
     @broker.subscriber(topic_name)
     async def handle_video(msg):
         print("subscriber 동작 중...")
-
-        await send_to_topic("tmp_topic", msg)
+        #TODO: ai 처리 필요
         print("subscriber 동작 완료")
 
 

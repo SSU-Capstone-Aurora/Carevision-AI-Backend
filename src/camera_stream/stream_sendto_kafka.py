@@ -1,3 +1,4 @@
+import asyncio
 import os
 import zlib
 import cv2
@@ -12,19 +13,19 @@ camera_pw = os.environ.get("CAMERA_PASSWORD")
 camera_ip = os.environ.get("CAMERA_IP")
 url = f"rtsp://{camera_id}:{camera_pw}@{camera_ip}/cam/realmonitor?channel=1&subtype=0"
 
-# FastStream, Kafka 브로커 설정
-broker_env = os.environ.get("BROKER")
 
 # 병원을 토픽으로, 환자 key, data값으로 저장
 async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
     frame_counter = 0
-    frame_interval = 270  # 10초
+    frame_interval = 120  # 4초
+    retry_attempts = 5
 
     # RTSP 스트림 열기
     cap = cv2.VideoCapture(url)
 
     if not cap.isOpened():
         print("카메라 스트림을 열 수 없습니다.")
+        await asyncio.sleep(3)
         return
 
     while True:
@@ -32,6 +33,7 @@ async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
 
         if not ret:
             print("프레임을 가져올 수 없습니다.")
+            await asyncio.sleep(3)
             break
 
         # 프레임 카운터 증가
@@ -48,7 +50,16 @@ async def stream_rtsp_and_send_to_kafka(kafka_topic, user_id):
             compressed_frame = zlib.compress(buffer)
 
             # 프레임을 Kafka 서버로 전송
-            await broker.publish(compressed_frame, kafka_topic, key=user_id)
+            for attempt in range(retry_attempts):
+                try:
+                    await broker.publish(message=compressed_frame, topic=kafka_topic, key=user_id.encode('utf-8'))
+                    print("Kafka에 메시지 전송 성공")
+                    break
+                except Exception as e:
+                    print(f"Kafka 전송 실패: {e}, 재시도 중...")
+                    await asyncio.sleep(2 ** attempt)
+            else:
+                print("Kafka 전송 최종 실패")
 
     # 모든 작업 종료 후 자원 해제
     cap.release()
