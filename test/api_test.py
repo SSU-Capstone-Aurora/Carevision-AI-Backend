@@ -1,8 +1,5 @@
-import asyncio
-
 from fastapi import APIRouter
 
-from test.consumer_test import consume_messages, produce_messages
 from test.ffmpeg_test import ffmpeg_test
 from test.stream_test import send_example
 
@@ -19,10 +16,3 @@ async def test_send():
 def test_ffmpeg():
     print("ffmpeg 테스트 실행")
     ffmpeg_test()
-
-
-@router.get('/test/consumer')
-async def test_consumer():
-    consumer_task = asyncio.create_task(consume_messages())
-    await produce_messages()
-    await consumer_task
