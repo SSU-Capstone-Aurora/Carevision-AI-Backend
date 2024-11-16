@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0
 
 # FFmpeg 설치
-RUN apt-get update && apt-get install -y ffmpeg
+RUN apt-get install -y ffmpeg
 
 # 어플리케이션 코드 복사
 COPY . /app-ai
