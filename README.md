@@ -2,10 +2,10 @@
 > 환자 곁에서 늘 함께, 간호사의 눈이 되어주는 환자 모니터링 서비스 • 케어비전 **AI** 레포지토리
 
 <div align="center">
-<img alt="GitHub issues" src="https://img.shields.io/github/issues/SSU-Capstone-Aurora/CareVision-AI-Backend?label=Issues&labelColor=%2332439C&color=%23a0ddff">
-<img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/SSU-Capstone-Aurora/CareVision-AI-Backend?label=PRs&labelColor=32439c&color=a0ddff">
-<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/SSU-Capstone-Aurora/CareVision-AI-Backend/dev_deploy.yml?label=dev&labelColor=32439c&color=a0ddff">
-<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/SSU-Capstone-Aurora/CareVision-AI-Backend?label=Commits&labelColor=32439c&color=a0ddff">
+<img alt="GitHub issues" src="https://img.shields.io/github/issues/SSU-Capstone-Aurora/Carevision-AI-Backend?label=Issues&labelColor=%2332439C&color=%23a0ddff">
+<img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/SSU-Capstone-Aurora/Carevision-AI-Backend?label=PRs&labelColor=32439c&color=a0ddff">
+<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/SSU-Capstone-Aurora/Carevision-AI-Backend/dev_deploy.yml?label=dev&labelColor=32439c&color=a0ddff">
+<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/SSU-Capstone-Aurora/Carevision-AI-Backend?label=Commits&labelColor=32439c&color=a0ddff">
 </div>
 
 ## 💉About CareVision 
