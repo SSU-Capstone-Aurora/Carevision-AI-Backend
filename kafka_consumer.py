@@ -1,26 +1,52 @@
-import asyncio
+from binascii import unhexlify
+import json
+from Crypto.Cipher import AES
+import zlib
 
-from fastapi import FastAPI
+# AES GCM 복호화 함수
+def decrypt_data_gcm(encrypted_data, aes_iv, tag, aes_key):
+    try:
+        cipher = AES.new(aes_key, AES.MODE_GCM, nonce=aes_iv)
+        decrypted_data = cipher.decrypt_and_verify(encrypted_data, tag)
+        return decrypted_data
+    except Exception as e:
+        print(f"Decryption failed: {e}")
+        return None
 
-from src.camera_stream.kafka_streams import connect_broker
-from src.camera_stream.stream_sendto_kafka import stream_rtsp_and_send_to_kafka
-from src.config.kafka_broker_instance import kafka_app
-from test.api_test import router
+# Global AES Key and IV (초기값 설정)
+aes_key = None
+aes_iv = None
 
-app = FastAPI()
-app.include_router(router)
+# Kafka 메시지 처리
+@broker.subscriber("hospital_topic")
+async def handle_message(message):
+    global aes_key, aes_iv
 
-@app.on_event("startup")
-async def startup_event():
-    await connect_broker()
+    try:
+        # JSON 메시지 디코딩
+        payload = json.loads(message.value)
 
-    # FastStream 애플리케이션 실행
-    asyncio.create_task(kafka_app.run())
+        if payload["type"] == "key_update":
+            # 키 갱신 알림 처리
+            aes_key = unhexlify(payload["key"])
+            aes_iv = unhexlify(payload["iv"])
+            print("AES 키 갱신됨")
+        elif payload["type"] == "frame":
+            # 데이터 메시지 처리
+            if aes_key is None or aes_iv is None:
+                print("AES 키가 설정되지 않았습니다. 복호화 불가")
+                return
 
-@app.get('/ai-health')
-def health_check():
-    return {"I'm healthy!!!"}
+            encrypted_frame = unhexlify(payload["data"])
+            tag = unhexlify(payload["tag"])
+            iv = unhexlify(payload["iv"])
 
-@app.get("/video/{user_id}")
-def stream_video(topic: str, user_id: str):
-    return stream_rtsp_and_send_to_kafka(topic, user_id) #병원을 토픽으로, 환자 key, data값으로 저장
+            # 복호화
+            decompressed_data = decrypt_data_gcm(encrypted_frame, iv, tag, aes_key)
+            if decompressed_data:
+                frame_data = zlib.decompress(decompressed_data)
+                print("Successfully decrypted and decompressed frame")
+            else:
+                print("Decryption failed")
+    except Exception as e:
+        print(f"Error processing message: {e}")
