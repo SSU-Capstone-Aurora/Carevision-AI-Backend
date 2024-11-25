@@ -3,6 +3,9 @@ import json
 from Crypto.Cipher import AES
 import zlib
 
+from src.config.kafka_broker_instance import broker
+
+
 # AES GCM 복호화 함수
 def decrypt_data_gcm(encrypted_data, aes_iv, tag, aes_key):
     try:
