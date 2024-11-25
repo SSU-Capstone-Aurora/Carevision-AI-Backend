@@ -5,10 +5,12 @@ from fastapi import FastAPI
 from src.camera_stream.kafka_streams import connect_broker
 from src.camera_stream.stream_sendto_kafka import stream_rtsp_and_send_to_kafka
 from src.config.kafka_broker_instance import kafka_app
+from src.controller.video_controller import video_router
 from test.api_test import router
 
 app = FastAPI()
 app.include_router(router)
+app.include_router(video_router)
 
 @app.on_event("startup")
 async def startup_event():
