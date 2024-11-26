@@ -1,6 +1,8 @@
 import os
 import zlib
 import time
+
+import cv2
 from Crypto.Cipher import AES
 from dotenv import load_dotenv
 from src.config.kafka_broker_instance import broker
