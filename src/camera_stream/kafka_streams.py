@@ -1,5 +1,6 @@
 import asyncio
 
+from alarm.send_alarm import send_alarm_request
 from src.config.kafka_broker_instance import broker
 
 async def connect_broker():
@@ -29,3 +30,13 @@ async def send_to_topic(topic_name, msg):
         print(f"Kafka에 {topic_name}로 메시지 전송 완료: {msg}")
 
     await send_processed_result(msg)
+
+
+# 알림 전용 consumer
+def alarm_to_topic(topic_name):
+    @broker.subscriber(topic_name)
+    async def handle_alarm(msg):
+        print("subscriber 동작 중...")
+
+        await send_alarm_request("tmp_topic", msg)
+        print("subscriber 동작 완료")
