@@ -1,0 +1,79 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    networks:
+      - carevision_network
+
+  carevision-ai-green:
+#    build:
+#      context: . ## build Docker file location
+#      dockerfile: Dockerfile ## build file name
+    image: cv-green
+    container_name: carevision-ai-green
+    environment:
+      - PORT=5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      kafka-faststream:
+        condition: service_healthy
+    networks:
+      - carevision_network
+
+#  kafdrop:
+#    image: obsidiandynamics/kafdrop:3.28.0
+#    container_name: kafdrop
+#    restart: "no"
+#    ports:
+#      - "9000:9000"
+#    environment:
+#      KAFKA_BROKER_CONNECT: "kafka-faststream:9092"
+#      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
+#    depends_on:
+#      - "kafka-faststream"
+#    networks:
+#      - carevision_network
+
+  kafka-faststream:
+    image: bitnami/kafka:3.5.0
+    container_name: kafka-faststream
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_HEAP_OPTS: "-Xmx512M -Xms512M"
+      KAFKA_ENABLE_KRAFT: "true"
+      KAFKA_CFG_NODE_ID: "1"
+      KAFKA_CFG_PROCESS_ROLES: "broker,controller"
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_CFG_LISTENERS: "PLAINTEXT://kafka-faststream:9092,CONTROLLER://kafka-faststream:9093"
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+      KAFKA_CFG_ADVERTISED_LISTENERS: "PLAINTEXT://kafka-faststream:9092"
+      KAFKA_BROKER_ID: "1"
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: "1@kafka-faststream:9093"
+      ALLOW_PLAINTEXT_LISTENER: "true"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - carevision_network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server kafka-faststream:9092 --list"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+#  rtsp-server:
+#    image: aler9/rtsp-simple-server
+#    container_name: rtsp-server
+#    ports:
+#      - "8554:8554"
+#    restart: always
+#    networks:
+#      - carevision_network
+
+networks:
+  carevision_network:
+    driver: bridge
