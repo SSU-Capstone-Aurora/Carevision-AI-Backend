@@ -1,6 +1,6 @@
 import asyncio
 
-from alarm.send_alarm import send_alarm_request
+from src.alarm.send_alarm import send_alarm_request
 from src.config.kafka_broker_instance import broker
 
 async def connect_broker():
@@ -8,6 +8,8 @@ async def connect_broker():
         print("Kafka 브로커 연결 시도 중...")
         await broker.connect()
         print("Kafka 브로커 연결 완료")
+
+        alarm_to_topic("tmp_topic") # TODO: 테스트를 위한 구독
     except Exception as e:
         print(f"Kafka 브로커 연결 실패: {e}")
         await asyncio.sleep(3) # 3초 대기 후 재시도
@@ -35,8 +37,7 @@ async def send_to_topic(topic_name, msg):
 # 알림 전용 consumer
 def alarm_to_topic(topic_name):
     @broker.subscriber(topic_name)
-    async def handle_alarm(msg):
+    def handle_alarm(msg):
         print("subscriber 동작 중...")
-
-        await send_alarm_request("tmp_topic", msg)
+        send_alarm_request(msg)
         print("subscriber 동작 완료")
