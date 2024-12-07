@@ -24,7 +24,7 @@ def encode_image(image):
 
 
 async def pose_fall_detection(topic, user_id, url):
-    kafka_topic = topic
+    kafka_topic = topic+"-alarm"
 
     with mp_pose.Pose(
             static_image_mode=True,
