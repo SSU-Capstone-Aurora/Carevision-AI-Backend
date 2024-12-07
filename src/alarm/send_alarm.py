@@ -8,7 +8,7 @@ load_dotenv()
 api_url = os.getenv("API_URL")
 
 
-def send_alarm_request(patient_id):
+async def send_alarm_request(patient_id):
     url = f"{api_url}{patient_id}"
 
     headers = {

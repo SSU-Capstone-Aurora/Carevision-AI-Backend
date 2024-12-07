@@ -40,7 +40,7 @@ async def send_to_topic(topic_name, msg):
 # 알림 전용 consumer
 def alarm_to_topic(topic_name):
     @broker.subscriber(topic_name)
-    def handle_alarm(msg):
+    async def handle_alarm(msg):
         print("subscriber 동작 중...")
-        send_alarm_request(msg)
+        await send_alarm_request(msg)
         print("subscriber 동작 완료")
