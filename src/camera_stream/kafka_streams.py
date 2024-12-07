@@ -2,7 +2,7 @@ import asyncio
 
 from src.alarm.send_alarm import send_alarm_request
 from src.config.kafka_broker_instance import broker
-from video.s3_video import image_handler
+from src.video.s3_video import image_handler
 
 
 async def connect_broker():
@@ -24,7 +24,11 @@ def subscribe_to_topic(topic_name):
     @broker.subscriber(topic_name)
     async def handle_video(msg):
         print("subscriber 동작 중...")
-        await image_handler(msg) # 이미지 프레임 s3에 저장
+
+        key = msg.get("key")
+        data = msg.get("data")
+
+        await image_handler(data,key)
         print("subscriber 동작 완료")
 
 
