@@ -11,8 +11,10 @@ async def connect_broker():
         await broker.connect()
         print("Kafka 브로커 연결 완료")
 
-        alarm_to_topic("tmp_topic_alarm") # TODO: 테스트를 위한 구독
-        subscribe_to_topic("tmp_topic")
+        print("topic 구독 중...")
+        alarm_to_topic("aurora-alarm")
+        subscribe_to_topic("aurora")
+        print("topic 구독 완료")
 
     except Exception as e:
         print(f"Kafka 브로커 연결 실패: {e}")
