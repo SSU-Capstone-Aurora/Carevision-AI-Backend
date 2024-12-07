@@ -104,18 +104,19 @@ async def pose_fall_detection(topic, user_id, url):
                     # 첫번 째만 출력되게 - 알람을 보내는 용
                     if cnt == 1:
                         await broker.publish(message=user_id.encode('utf-8'), topic=kafka_topic, key=user_id.encode('utf-8'))
-                    # # 랜드마크 그리기
-                    # image.flags.writeable = True
-                    # image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-                    # mp_drawing.draw_landmarks(
-                    #     image,
-                    #     results.pose_landmarks,
-                    #     mp_pose.POSE_CONNECTIONS,
-                    #     landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
-                    #
-                    # # 이미지를 base64로 변환해서 Kafka로 전송
-                    # encoded_image = encode_image(image)
-                    # broker.publish(message=encoded_image, topic=topic, key=user_id.encode('utf-8'))
+                    # 랜드마크 그리기
+                    image.flags.writeable = True
+                    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                    mp_drawing.draw_landmarks(
+                        image,
+                        results.pose_landmarks,
+                        mp_pose.POSE_CONNECTIONS,
+                        landmark_drawing_spec=mp_drawing_styles.get_default_pose_landmarks_style())
+
+                    # 이미지를 base64로 변환해서 Kafka로 전송
+                    encoded_image = encode_image(image).encode('utf-8')
+                    message = {"key": user_id.encode('utf-8'), "data": encoded_image}
+                    await broker.publish(message=message, topic=topic, key=user_id.encode('utf-8'))
                 else:
                     cnt=0
             # 30 FPS로 대기
