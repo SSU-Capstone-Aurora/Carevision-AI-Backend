@@ -8,8 +8,9 @@ from src.video.s3_upload import s3_upload
 
 frames = []
 
-async def image_handler(msg):
-    image_data = base64.b64decode(msg.data)
+
+async def image_handler(data, key):
+    image_data = base64.b64decode(data)
 
     # 이미지를 numpy 배열로 변환
     np_image = np.frombuffer(image_data, dtype=np.uint8)
@@ -34,7 +35,11 @@ async def image_handler(msg):
 
         # 영상 저장 완료 후, S3에 업로드
         video_writer.release()
-        s3_upload(video_filename)
+        s3_upload(video_filename, key)
+
+        # 로컬 파일 삭제
+        if os.path.exists(video_filename):
+            os.remove(video_filename)
 
         # 프레임 리스트 초기화
         frames.clear()
