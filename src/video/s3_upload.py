@@ -7,7 +7,7 @@ import numpy as np
 from dotenv import load_dotenv
 from fastapi import HTTPException
 
-from db.database_service import save_video_in_db
+from src.db.database_service import save_video_in_db
 
 load_dotenv()
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
