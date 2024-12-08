@@ -18,8 +18,11 @@ s3 = boto3.client('s3', aws_access_key_id=aws_access_key_id, aws_secret_access_k
                   region_name=region_name)
 
 
-def s3_upload(file_name, data):
-    s3.put_object(Bucket=bucket_name, Key=file_name, Body=data)
+def s3_upload(video_filename,key):
+    current_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    s3_key = f"video/{key}/{current_time}.mp4"
+    s3.upload_file(video_filename, bucket_name, s3_key)
+    print(f"{video_filename} 업로드 완료")
 
 
 def upload(frame: np.ndarray,patient_id) -> str:
