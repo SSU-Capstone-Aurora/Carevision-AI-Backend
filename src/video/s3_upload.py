@@ -7,6 +7,8 @@ import numpy as np
 from dotenv import load_dotenv
 from fastapi import HTTPException
 
+from db.database_service import save_video_in_db
+
 load_dotenv()
 aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
 aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -23,6 +25,10 @@ def s3_upload(video_filename,key):
     s3_key = f"video/{key}/{current_time}.mp4"
     s3.upload_file(video_filename, bucket_name, s3_key)
     print(f"{video_filename} 업로드 완료")
+
+    file_url = f"https://{bucket_name}.s3.amazonaws.com/{s3_key}"
+    save_video_in_db(key,file_url,s3_key)
+    print("done")
 
 
 def upload(frame: np.ndarray,patient_id) -> str:
