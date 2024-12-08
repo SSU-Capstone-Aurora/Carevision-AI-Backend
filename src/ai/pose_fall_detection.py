@@ -64,8 +64,12 @@ async def pose_fall_detection(topic, user_id, url):
             mp_drawing.plot_landmarks(
                 results.pose_world_landmarks, mp_pose.POSE_CONNECTIONS)
 
-    # For webcam input:
-    cap = cv2.VideoCapture(url)
+    try:
+        cap = cv2.VideoCapture(url)
+    except cv2.error as e:
+        print(f"Error opening video stream: {e}")
+        return
+
     cnt = 0  # 카운트
 
     with mp_pose.Pose(
