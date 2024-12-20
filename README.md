@@ -9,11 +9,12 @@
 </div>
 
 ## 💉About CareVision 
-<img src="https://github.com/user-attachments/assets/5abc4083-cf7f-4f1a-9952-e73a6d6148f4" alt="소개" style="width: 70%; height: auto;">
+<img src="https://github.com/user-attachments/assets/ade19b79-3661-4a26-b270-ed1b2bece4c8" alt="표지" style="width: 70%; height: auto;">
+<img src="https://github.com/user-attachments/assets/55e4e244-8371-4bb7-b2b4-b9efe3a8da49" alt="소개" style="width: 70%; height: auto;">
 
 ## 💉핵심 기능
 **Kafka Streams와 이상행동 감지 AI 모델을 사용한 실시간 영상 스트리밍 기능 구현**
-<img src="https://github.com/user-attachments/assets/7c15c8b3-e220-4910-be29-03a002b860db" alt="핵심 기능" style="width: 60%; height: auto;">
+<img src="https://github.com/user-attachments/assets/528059da-d067-4319-aeb4-c8c6a679a6d2" alt="핵심 기능" style="width: 60%; height: auto;">
 
 ## 💉 Backend Team Member
 
